@@ -1,0 +1,20 @@
+---
+- name: Add repositories
+  apt_repository: repo='deb https://packages.elastic.co/beats/apt stable main' state=present
+
+- name: import elastic key
+  apt_key: url=https://packages.elastic.co/GPG-KEY-elasticsearch state=present validate_certs=no
+
+- name: install filebeat
+  apt: name=filebeat update_cache=yes state=latest force=yes
+  notify:
+    - start filebeat
+
+- name: Creates Certs directory
+  file: path=/etc/pki/tls/certs/ state=directory mode=0755
+
+- name: Copy crt file
+  template: src=files/logstash-forwarder.crt dest=/etc/pki/tls/certs/logstash-forwarder.crt
+
+- name: Copy filebeat config file
+  template: src=files/filebeat.yml dest=/etc/filebeat/filebeat.yml
